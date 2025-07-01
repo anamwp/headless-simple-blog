@@ -1,5 +1,6 @@
 import React, {useEffect} from 'react';
 import { useRouter } from 'next/router';
+import DOMPurify from 'dompurify';
 
 
 const Comment = ({ comment, comments, addReply }) => {
@@ -39,7 +40,7 @@ const Comment = ({ comment, comments, addReply }) => {
 			<div data-comment-id={comment.id} className='flex justify-between items-start'>
 				<div className="comment-content flex flex-col items-start">
 					<strong className="capitalize">{comment.author_name}</strong>
-					<div dangerouslySetInnerHTML={{__html: comment.content.rendered}} />
+                                       <div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(comment.content.rendered)}} />
 				</div>
 				<button
 					className="text-black text-sm mt-2 font-medium hover:text-slate-500"
@@ -56,7 +57,7 @@ const Comment = ({ comment, comments, addReply }) => {
 						}
 						if (replyMessageElement) {
 							replyMessageElement.classList.add('bg-slate-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded');
-							replyMessageElement.innerHTML = `<strong>Replying to comment:</strong> ${comment.content.rendered}`;
+                                                        replyMessageElement.innerHTML = `<strong>Replying to comment:</strong> ${DOMPurify.sanitize(comment.content.rendered)}`;
 						}
 
 						addReply(comment.id)

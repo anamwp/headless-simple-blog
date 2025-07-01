@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CommentsView from '../../components/Comment';
 import CommentForm from '../../components/CommentForm';
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -125,8 +126,8 @@ const PostPage = ({ post, relatedPosts, categories, tags, comments }) => {
 		{
 			featuredImage && <Image width={900} height={600} src={featuredImage} alt={post.title.rendered} className='mt-7 w-full h-auto mb-5 object-cover rounded-md' />
 		}
-		{/* Content */}
-		<div className='flex flex-col gap-5' dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+                {/* Content */}
+                <div className='flex flex-col gap-5' dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content.rendered) }} />
 		{/* Categories */}
 		<h2 className='text-2xl my-5 font-medium mt-10'>Categories</h2>
 		<ul className='flex flex-wrap gap-2'>

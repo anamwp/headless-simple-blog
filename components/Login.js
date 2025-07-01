@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import DOMPurify from 'dompurify';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -49,7 +50,7 @@ const Login = () => {
           required
         />
         <button type="submit" className='mt-5 px-5 py-2 border-2 border-black rounded-sm bg-black text-white hover:bg-slate-700 hover:border-black transition-all'>Login</button>
-        {error && <div className="error text-red-800" dangerouslySetInnerHTML={{__html: error}} />}
+        {error && <div className="error text-red-800" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(error)}} />}
         
       </form>
     </div>
