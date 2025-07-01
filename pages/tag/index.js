@@ -32,7 +32,7 @@ export default function Tag() {
 		}
 	}
 
-	console.log('siteTags', siteTags.length);
+
 
 	return (
 		<div className='container max-w-screen-md mx-auto my-10 inline-block'>

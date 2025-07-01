@@ -32,7 +32,7 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
 
-  console.log('static params', params);
+  
   // console.log('static context', context);
   const { slug } = params;
   // console.log('params of static props', id);
@@ -103,7 +103,7 @@ const PostPage = ({ post, relatedPosts, categories, tags, comments }) => {
 
   const addReply = (parentId) => {
     // Set up your reply form logic here
-    console.log('Reply to comment ID:', parentId);
+    
     setParentId(parentId);
   };
 

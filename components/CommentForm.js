@@ -29,8 +29,7 @@ const CommentForm = ({ postId, parentId = 0 }) => {
 				author_email: email,
 				content,
 			});
-			console.log('Comment submitted response:', response);
-			console.log('Comment submitted:', response.data);
+
 			if( response.status === 201 ){
 				if( !userData || !userData.token ){
 					setAuthorName('');
