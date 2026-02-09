@@ -28,7 +28,7 @@ export default function LoginPage() {
 							// console.log('User is already logged in:', user);
 							setUser(user);
 						} else {
-							console.log('User is not logged in');
+
 						}
 					});
 				}
