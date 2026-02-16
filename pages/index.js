@@ -10,19 +10,19 @@ export async function getStaticProps() {
 }
 
 const RenderData = ( posts ) => {
-  // console.log('featured image', featuredImage);
+  // console.log('featured image', featuredImageUrl);
   return posts.data.map((post) => {
-    const featuredImage = post._embedded['wp:featuredmedia'] ? post._embedded['wp:featuredmedia'][0].source_url : null;
-    // console.log('featured image', featuredImage);
+    const featuredImageUrl = post._embedded['wp:featuredmedia'] ? post._embedded['wp:featuredmedia'][0].source_url : null;
+    // console.log('featured image', featuredImageUrl);
     return (
       <li key={post.id} className='mb-2'>
-      <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden inline-block rounded-md' href={`/posts/${post.slug}`}>
-        {
-          featuredImage && <Image width={900} height={600} src={featuredImage} alt={post.title.rendered} className='w-auto h-auto object-cover rounded-md hover:scale-125 transition-all duration-300' />
-        }
-      </Link>
-      <Link className='text-lg mt-3 inline-block leading-tight text-slate-600 text-base hover:text-slate-950' href={`/posts/${post.slug}`}>{post.title.rendered}</Link>
-    </li>
+        <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden inline-block rounded-md' href={`/posts/${post.slug}`}>
+          {
+            featuredImageUrl && <Image width={900} height={600} src={featuredImageUrl} alt={post.title.rendered} className='w-auto h-auto object-cover rounded-md hover:scale-125 transition-all duration-300' />
+          }
+        </Link>
+        <Link className='text-lg mt-3 inline-block leading-tight text-slate-600 text-base hover:text-slate-950' href={`/posts/${post.slug}`}>{post.title.rendered}</Link>
+      </li>
     )
   });
 }

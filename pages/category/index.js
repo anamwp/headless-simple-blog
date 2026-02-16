@@ -32,7 +32,7 @@ export default function Category() {
 		}
 	}
 
-	console.log('siteCategories', siteCategories);
+	// console.log('siteCategories', siteCategories);
 
 	return (
 		<div className='container max-w-screen-md mx-auto my-10 inline-block'>

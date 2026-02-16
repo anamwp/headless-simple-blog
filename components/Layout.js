@@ -13,12 +13,12 @@ const Layout = ({ children }) => {
           </h1>
           <ul style={styles.navList}>
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/">Home</Link></li>
-            <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/about">About</Link></li>
+            {/* <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/about">About</Link></li> */}
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/category">Category</Link></li>
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/tag">Tag</Link></li>
             <LoginMenu/>
           </ul>
-          <WPMenu menuSlug={`${process.env.NEXT_PUBLIC_PRIMARY_MENU_ID}`} />
+          {/* <WPMenu menuSlug={`${process.env.NEXT_PUBLIC_PRIMARY_MENU_ID}`} /> */}
         </nav>
       </header>
 
