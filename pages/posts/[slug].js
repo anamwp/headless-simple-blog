@@ -23,7 +23,6 @@ export async function getStaticPaths() {
       id: post.id.toString()
     },
   }));
-  debugger;
   /**
    * Return the paths, and set fallback to false to return a 404 if the post doesn't exist
    */
