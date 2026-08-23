@@ -15,13 +15,9 @@ const Login = () => {
         username,
         password,
       });
-	  // console.log( response );
-    //   const { token, user_display_name, user_email, user_nicename } = response.data;
 
-      // Store the token in cookies or localStorage
       document.cookie = `user_data=${encodeURIComponent(JSON.stringify(response.data))}; path=/`;
 
-    //   console.log('User logged in:', user_display_name, user_email, user_nicename);
       router.push('/'); // Redirect to home or another page
     } catch (err) {
       console.error('Login failed:', err.response?.data || err.message);
@@ -50,7 +46,7 @@ const Login = () => {
         />
         <button type="submit" className='mt-5 px-5 py-2 border-2 border-black rounded-sm bg-black text-white hover:bg-slate-700 hover:border-black transition-all'>Login</button>
         {error && <div className="error text-red-800" dangerouslySetInnerHTML={{__html: error}} />}
-        
+
       </form>
     </div>
   );

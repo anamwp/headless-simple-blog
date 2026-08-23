@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import LoginMenu from './LoginMenu';
-import WPMenu from './WPMenu';
 
 const Layout = ({ children }) => {
   return (
@@ -13,12 +12,10 @@ const Layout = ({ children }) => {
           </h1>
           <ul style={styles.navList}>
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/">Home</Link></li>
-            {/* <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/about">About</Link></li> */}
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/category">Category</Link></li>
             <li><Link className='text-slate-600 text-base hover:text-slate-950' href="/tag">Tag</Link></li>
             <LoginMenu/>
           </ul>
-          {/* <WPMenu menuSlug={`${process.env.NEXT_PUBLIC_PRIMARY_MENU_ID}`} /> */}
         </nav>
       </header>
 
@@ -38,27 +35,12 @@ const Layout = ({ children }) => {
 };
 
 const styles = {
-  header: {
-    background: '#333',
-    color: '#fff',
-    padding: '10px 20px',
-  },
   navList: {
     listStyle: 'none',
     display: 'flex',
     gap: '15px',
     padding: 0,
     margin: 0,
-  },
-  main: {
-    minHeight: '80vh',
-    padding: '20px',
-  },
-  footer: {
-    background: '#333',
-    color: '#fff',
-    textAlign: 'center',
-    padding: '10px',
   },
 };
 
