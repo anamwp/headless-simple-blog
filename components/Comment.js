@@ -1,36 +1,6 @@
-import React, {useEffect} from 'react';
-import { useRouter } from 'next/router';
-
+import React from 'react';
 
 const Comment = ({ comment, comments, addReply }) => {
-	/**
-	 * This useEffect will remove the reply message and comment submit status message when user navigates to another page.
-	 */
-	const router = useRouter();
-	useEffect(() => {
-		const handleRouteChange = () => {
-			const replyMessageElement = document.querySelector('.reply-to-comment-message');
-			if (replyMessageElement) {
-				replyMessageElement.classList.remove( 'bg-slate-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded' );
-				replyMessageElement.innerHTML = ''; // Reset content
-			}
-			const commentSubmitStatusDom = document.querySelector('.comment-submit-status');
-			if(commentSubmitStatusDom){
-				commentSubmitStatusDom.classList.remove('bg-green-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded', 'mb-5');
-				commentSubmitStatusDom.innerHTML = '';
-			}
-		};
-		// alert('Comment.js');
-	
-		router.events.on('routeChangeStart', handleRouteChange);
-	
-		// Cleanup listener on component unmount
-		return () => {
-		  router.events.off('routeChangeStart', handleRouteChange);
-		};
-	}, [router.events]);
-	
-
 	// filter rootCommnets and find out children comments
 	const childComments = comments.filter(c => c.parent === comment.id);
 
@@ -48,18 +18,7 @@ const Comment = ({ comment, comments, addReply }) => {
 						if (element) {
 						  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 						}
-						const replyMessageElement = document.querySelector('.reply-to-comment-message');
-						const commentSubmitStatusDom = document.querySelector('.comment-submit-status');
-						if(commentSubmitStatusDom){
-							commentSubmitStatusDom.innerHTML = '';
-							commentSubmitStatusDom.classList.remove('bg-green-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded', 'mb-5');
-						}
-						if (replyMessageElement) {
-							replyMessageElement.classList.add('bg-slate-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded');
-							replyMessageElement.innerHTML = `<strong>Replying to comment:</strong> ${comment.content.rendered}`;
-						}
-
-						addReply(comment.id)
+						addReply(comment.id, comment.content.rendered);
 					}}
 				>
 					Reply

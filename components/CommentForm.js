@@ -1,50 +1,37 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import UserData from './UserData';
+import { submitComment } from '@/lib/api';
+import { useAuth } from '@/lib/useAuth';
 
-const CommentForm = ({ postId, parentId = 0 }) => {
+const CommentForm = ({ postId, parentId = 0, onSubmitted }) => {
 	const [authorName, setAuthorName] = useState('');
 	const [authorEmail, setAuthorEmail] = useState('');
 	const [content, setContent] = useState('');
-	const userData = UserData();
-	
+	const userData = useAuth();
+
 	const handleSubmit = async (e) => {
+		e.preventDefault();
 		let name = authorName;
-    	let email = authorEmail;
+		let email = authorEmail;
 
 		if( userData && userData.token ){
 			name = userData.user_nicename;
 			email = userData.user_email;
 		}
 
-		e.preventDefault();
 		try {
-			// console.log( 'CommentForm.handleSubmit', userData );
-			const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/comments`, {
-				post: postId,	
-				parent: parentId,
-				// author_name: authorName,
-				// author_email: authorEmail,
-				author_name: name,
-				author_email: email,
-				content,
-			});
-			console.log('Comment submitted response:', response);
-			console.log('Comment submitted:', response.data);
+			const response = await submitComment({ postId, parentId, authorName: name, authorEmail: email, content });
 			if( response.status === 201 ){
 				if( !userData || !userData.token ){
 					setAuthorName('');
 					setAuthorEmail('');
 				}
 				setContent('');
-				// add message to user
-				const commentSubmitStatusDom = document.querySelector('.comment-submit-status');
-				commentSubmitStatusDom.classList.add('bg-green-200', 'flex', 'gap-3', 'p-5', 'inline-block', 'w-full', 'rounded', 'mb-5');
-				commentSubmitStatusDom.innerHTML = 'Comment submitted successfully. Please wait for approval.';
+				onSubmitted?.('Comment submitted successfully. Please wait for approval.');
 			}
 			// Optionally refresh comments
 		} catch (error) {
 			console.error('Failed to submit comment:', error);
+			onSubmitted?.('Failed to submit comment. Please try again.');
 		}
 	};
 
@@ -58,7 +45,7 @@ const CommentForm = ({ postId, parentId = 0 }) => {
 				required
 			/>
 			{
-				!userData || !userData.token ? 
+				!userData || !userData.token ?
 					<>
 						<input
 							type="text"
@@ -79,7 +66,7 @@ const CommentForm = ({ postId, parentId = 0 }) => {
 					</>
 				: null
 			}
-			
+
 			<button className='inline-block px-5 py-2 mb-5 border-2 border-slate-500 rounded-sm hover:bg-black hover:text-white hover:border-black transition-all' type="submit">Submit</button>
 		</form>
 	);
