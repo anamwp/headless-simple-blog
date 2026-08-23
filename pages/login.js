@@ -1,46 +1,33 @@
 import { useEffect, useState } from 'react';
 import Login from '../components/Login';
 import { getCurrentUser } from '../components/CurrentUser';
+import { useAuth } from '@/lib/useAuth';
 
 export default function LoginPage() {
-	const [ user, setUser ] = useState(null);
-	const [ userData, setUserData ] = useState(null);
-	const useAutoLogin = () => {
-		useEffect(() => {
-			// if only token is in cookie and no user data
-			// const token = document.cookie
-			// .split('; ')
-			// .find((row) => row.startsWith('token='))
-			// ?.split('=')[1];
+	const userData = useAuth();
+	const [user, setUser] = useState(null);
 
-			const cookies = document.cookie.split('; ');
-			const userCookie = cookies.find((cookie) => cookie.startsWith('user_data='));
+	useEffect(() => {
+		if (!userData?.token) {
+			setUser(null);
+			return;
+		}
 
-			if (userCookie) {
-				const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-				// console.log(userData.token); // Access the token
-				// console.log(userData.user_display_name); // Access the display name
-				setUserData(userData);
-				const token = userData.token;
-				if (token) {
-					getCurrentUser(token).then((user) => {
-						if (user) {
-							// console.log('User is already logged in:', user);
-							setUser(user);
-						} else {
-							console.log('User is not logged in');
-						}
-					});
-				}
-			}
-		
-		}, []);
-	};
-	// console.log('User:', user);
+		let isCurrent = true;
+		getCurrentUser(userData.token).then((fetchedUser) => {
+			if (isCurrent) setUser(fetchedUser);
+		});
+
+		return () => {
+			isCurrent = false;
+		};
+	}, [userData?.token]);
+
 	const logout = () => {
 		document.cookie = 'user_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 		window.location.reload();
 	};
+
 	return (
 		<div className='container max-w-screen-md mx-auto p-5'>
 			{/* Show login if no user */}
@@ -68,8 +55,6 @@ export default function LoginPage() {
 					</div>
 				)
 			}
-			
-			{useAutoLogin()}
 		</div>
 	);
 }
