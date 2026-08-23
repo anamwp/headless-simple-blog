@@ -64,7 +64,7 @@ const TagPage = ({ tag, posts }) => {
           const featuredImage = post._embedded['wp:featuredmedia'] ? post._embedded['wp:featuredmedia'][0].source_url : null;
           return (
             <li key={post.id} className='mb-1'>
-              <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden inline-block rounded-md' href={`/posts/${post.slug}`}>
+              <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden block rounded-md' href={`/posts/${post.slug}`}>
                 {
                   featuredImage && (
                     <Image

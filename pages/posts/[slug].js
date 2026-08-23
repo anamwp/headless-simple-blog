@@ -154,7 +154,7 @@ const PostPage = ({ post, relatedPosts, categories, tags, comments }) => {
 				const relatedFeaturedImage = relatedPost._embedded['wp:featuredmedia'] ? relatedPost._embedded['wp:featuredmedia'][0].source_url : null;
 				return (
 				<li key={relatedPost.id} className='mb-1'>
-					<Link className='overflow-hidden inline-block rounded-md' href={`/posts/${relatedPost.slug}`}>
+					<Link className='overflow-hidden block rounded-md' href={`/posts/${relatedPost.slug}`}>
 					{
 					relatedFeaturedImage && (
 						<Image
