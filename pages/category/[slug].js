@@ -1,13 +1,10 @@
-import axios from 'axios';
 import Link from 'next/link';
 import Image from 'next/image';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getCategories, getCategoryBySlug, getPostsByCategory } from '@/lib/api';
 
 export async function getStaticPaths() {
   // Fetch all categories
-  const response = await axios.get(`${API_URL}/categories`);
-  const categories = response.data;
+  const categories = await getCategories();
 
   // Create paths for each category
   const paths = categories.map((category) => ({
@@ -24,27 +21,20 @@ export async function getStaticProps({ params }) {
   const { slug } = params;
 
   try {
-    // Fetch category details by slug
-    const categoryResponse = await axios.get(`${API_URL}/categories`, {
-      params: { slug },
-    });
-
-    const category = categoryResponse.data[0];
+    const category = await getCategoryBySlug(slug);
 
     if (!category) {
       return { notFound: true };
     }
 
-    // Fetch posts in this category
-    const postsResponse = await axios.get(`${API_URL}/posts`, {
-      params: { categories: category.id, per_page: process.env.NEXT_PUBLIC_POSTS_PER_PAGE, _embed: true },
-    });
+    const posts = await getPostsByCategory(category.id);
 
     return {
       props: {
         category,
-        posts: postsResponse.data,
+        posts,
       },
+      revalidate: 10, // Revalidate every 10 seconds, in step with the post/tag pages
     };
   } catch (error) {
     console.error('Error fetching category or posts:', error);
@@ -63,7 +53,16 @@ const CategoryPage = ({ category, posts }) => {
             <li key={post.id} className='mb-1'>
               <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden inline-block rounded-md' href={`/posts/${post.slug}`}>
                 {
-                  featuredImage && <Image width={900} height={600} src={featuredImage} alt={post.title.rendered} className='w-auto h-auto object-cover rounded-md hover:scale-125 transition-all duration-300' />
+                  featuredImage && (
+                    <Image
+                      width={900}
+                      height={600}
+                      src={featuredImage}
+                      alt={post.title.rendered}
+                      sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                      className='w-full h-auto object-cover rounded-md hover:scale-125 transition-all duration-300'
+                    />
+                  )
                 }
               </Link>
               <Link className="inline-block capitalize text-slate-600 text-base hover:text-slate-950" href={`/posts/${post.slug}`}>{post.title.rendered}</Link>
