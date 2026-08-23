@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import CommentsView from '../../components/Comment';
 import CommentForm from '../../components/CommentForm';
@@ -44,6 +45,7 @@ export async function getStaticProps({ params }) {
 }
 
 const PostPage = ({ post, relatedPosts, categories, tags, comments }) => {
+  const router = useRouter();
   const [parentId, setParentId] = useState(0);
   const [replyMessage, setReplyMessage] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -54,6 +56,18 @@ const PostPage = ({ post, relatedPosts, categories, tags, comments }) => {
     setReplyMessage(null);
     setSubmitStatus(null);
   }, [post.id]);
+
+  // Warm the category/tag pages this post links to, so a click on one of
+  // them opens instantly instead of waiting on a cold fallback:true fetch.
+  // Delayed so it doesn't compete with this page's own initial load, and
+  // scoped to just this post's own categories/tags (not the whole site).
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      categories.forEach((category) => router.prefetch(`/category/${category.slug}`));
+      tags.forEach((tag) => router.prefetch(`/tag/${tag.slug}`));
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [post.id, categories, tags, router]);
 
   const featuredImage = post._embedded['wp:featuredmedia'] ? post._embedded['wp:featuredmedia'][0].source_url : null;
 

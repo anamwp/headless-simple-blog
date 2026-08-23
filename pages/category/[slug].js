@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { getCategories, getCategoryBySlug, getPostsByCategory } from '@/lib/api';
 
 export async function getStaticPaths() {
@@ -13,7 +14,9 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: 'blocking', // Generate pages on demand if not pre-built
+    // Navigate to not-yet-built category pages immediately with a
+    // placeholder, instead of blocking the URL change on the full fetch.
+    fallback: true,
   };
 }
 
@@ -43,6 +46,16 @@ export async function getStaticProps({ params }) {
 }
 
 const CategoryPage = ({ category, posts }) => {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return (
+      <div className='container max-w-screen-md mx-auto my-10'>
+        <p>Loading category...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2 className='text-2xl my-5 font-medium'>Category: {category.name}</h2>
