@@ -143,6 +143,7 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Registration temporarily disabled — will be implemented later
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', margin: 'var(--space-6) 0' }}>
           <div style={{ height: 1, background: 'var(--color-divider)', flex: 1 }} />
           <span className="text-muted" style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase' }}>Or</span>
@@ -152,6 +153,7 @@ export default function LoginPage() {
           <span className="text-muted" style={{ fontSize: 13 }}>No account? Registration is open to anyone who has commented before.</span>
           <button type="button" className="btn btn-secondary">Request an account</button>
         </div>
+        */}
       </div>
     </main>
   );
