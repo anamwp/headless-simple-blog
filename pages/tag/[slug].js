@@ -1,16 +1,12 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { getTags, getTagBySlug, getPostsByTag } from '@/lib/api';
+import { getCategories, getTags, getTagBySlug, getPostsByTag } from '@/lib/api';
+import ArchiveTemplate from '@/components/ArchiveTemplate';
+
+const POSTS_PER_PAGE = Number(process.env.NEXT_PUBLIC_POSTS_PER_PAGE);
 
 export async function getStaticPaths() {
-  // Fetch all tags
   const tags = await getTags();
-
-  // Create paths for each tag
-  const paths = tags.map((tag) => ({
-    params: { slug: tag.slug },
-  }));
+  const paths = tags.map((tag) => ({ params: { slug: tag.slug } }));
 
   return {
     paths,
@@ -30,14 +26,30 @@ export async function getStaticProps({ params }) {
       return { notFound: true };
     }
 
-    const posts = await getPostsByTag(tag.id);
+    const [postsPage, categories, tags] = await Promise.all([
+      getPostsByTag(tag.id, 1, POSTS_PER_PAGE),
+      getCategories(),
+      getTags(),
+    ]);
+
+    const railCategories = categories
+      .filter((c) => c.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+    const railTags = tags
+      .filter((t) => t.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
 
     return {
       props: {
         tag,
-        posts,
+        initialPosts: postsPage.data,
+        initialTotal: postsPage.totalPosts,
+        categories: railCategories,
+        tags: railTags,
       },
-      revalidate: 10, // Revalidate every 10 seconds, in step with the post/category pages
+      revalidate: 10,
     };
   } catch (error) {
     console.error('Error fetching tag or posts:', error);
@@ -45,45 +57,22 @@ export async function getStaticProps({ params }) {
   }
 }
 
-const TagPage = ({ tag, posts }) => {
+const TagPage = ({ tag, initialPosts, initialTotal, categories, tags }) => {
   const router = useRouter();
 
   if (router.isFallback) {
-    return (
-      <div className='container max-w-screen-md mx-auto my-10'>
-        <p>Loading tag...</p>
-      </div>
-    );
+    return <p className="shell text-muted" style={{ padding: 'var(--space-8)' }}>Loading tag…</p>;
   }
 
   return (
-    <div>
-      <h2 className='text-2xl my-5 font-medium'>Tag: {tag.name}</h2>
-      <ul className='grid grid-cols-1 gap-7 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
-        {posts.map((post) => {
-          const featuredImage = post._embedded['wp:featuredmedia'] ? post._embedded['wp:featuredmedia'][0].source_url : null;
-          return (
-            <li key={post.id} className='mb-1'>
-              <Link className='text-slate-600 text-base hover:text-slate-950 overflow-hidden block rounded-md' href={`/posts/${post.slug}`}>
-                {
-                  featuredImage && (
-                    <Image
-                      width={900}
-                      height={600}
-                      src={featuredImage}
-                      alt={post.title.rendered}
-                      sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                      className='w-full h-auto object-cover rounded-md hover:scale-125 transition-all duration-300'
-                    />
-                  )
-                }
-              </Link>
-            <Link className="inline-block capitalize text-slate-600 text-base hover:text-slate-950" href={`/posts/${post.slug}`}>{post.title.rendered}</Link>
-          </li>
-          )
-        })}
-      </ul>
-    </div>
+    <ArchiveTemplate
+      kind="Tag"
+      term={tag}
+      initialPosts={initialPosts}
+      initialTotal={initialTotal}
+      categories={categories}
+      tags={tags}
+    />
   );
 };
 
