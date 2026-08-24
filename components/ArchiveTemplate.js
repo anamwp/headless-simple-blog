@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getPostsByCategory, getPostsByTag } from '@/lib/api';
 import { getAuthor, getPrimaryCategory } from '@/lib/wp';
 import { formatDateShort, excerptText } from '@/lib/format';
@@ -12,6 +12,12 @@ const ArchiveTemplate = ({ kind, term, initialPosts, initialTotal, categories, t
   const [posts, setPosts] = useState(initialPosts);
   const [total, setTotal] = useState(initialTotal);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setPosts(initialPosts);
+    setTotal(initialTotal);
+    setPage(1);
+  }, [term.id, initialPosts, initialTotal]);
 
   const totalPages = Math.max(1, Math.ceil(total / POSTS_PER_PAGE));
 
