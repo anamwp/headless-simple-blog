@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/blog/
+/design_handoff_headless_blog/
+todo.md
