@@ -23,31 +23,36 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const { slug } = params;
 
-  const post = await getPostBySlug(slug);
+  try {
+    const post = await getPostBySlug(slug);
 
-  if (!post) {
-    return { notFound: true }; // 404 if the post doesn't exist
+    if (!post) {
+      return { notFound: true }; // 404 if the post doesn't exist
+    }
+
+    const [categories, tags, comments] = await Promise.all([
+      getCategoriesByIds(post.categories),
+      getTagsByIds(post.tags),
+      getComments(post.id),
+    ]);
+
+    const { html: bodyHtml, headings } = extractHeadings(post.content.rendered);
+
+    return {
+      props: {
+        post,
+        categories,
+        tags,
+        comments,
+        bodyHtml,
+        headings,
+      },
+      revalidate: 10, // Revalidate every 10 seconds
+    };
+  } catch (error) {
+    console.error('Error fetching post:', error);
+    return { notFound: true };
   }
-
-  const [categories, tags, comments] = await Promise.all([
-    getCategoriesByIds(post.categories),
-    getTagsByIds(post.tags),
-    getComments(post.id),
-  ]);
-
-  const { html: bodyHtml, headings } = extractHeadings(post.content.rendered);
-
-  return {
-    props: {
-      post,
-      categories,
-      tags,
-      comments,
-      bodyHtml,
-      headings,
-    },
-    revalidate: 10, // Revalidate every 10 seconds
-  };
 }
 
 const CopyLinkButton = () => {
