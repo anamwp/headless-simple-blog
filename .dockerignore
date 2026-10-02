@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env*
+docker
+blog
+design_handoff_headless_blog
+*.md
+Dockerfile
+compose.yaml

@@ -3,12 +3,14 @@
 const hostname = process.env.SITE_DOMAIN || 'anamstarter.local';
 
 module.exports = {
+  output: 'standalone',
   // Without this, the Pages Router leaves node_modules dependencies (e.g.
   // sanitize-html -> htmlparser2, which ships an ESM-only build) as runtime
   // externals in Vercel's serverless functions, where Node's require() can't
   // load them and throws ERR_REQUIRE_ESM. Bundling at build time avoids that.
   bundlePagesRouterDependencies: true,
   images: {
+    dangerouslyAllowLocalIP: process.env.ALLOW_LOCAL_IMAGE_IP === 'true',
     remotePatterns: [
       {
         protocol: 'https',

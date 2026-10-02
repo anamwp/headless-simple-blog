@@ -73,8 +73,28 @@ services:
       - frontend_node_modules:/app/node_modules
       - frontend_next:/app/.next
 
+  frontend-prod:
+    profiles: ["prod"]
+    build:
+      context: .
+      secrets:
+        - nextenv
+      extra_hosts:
+        - "wp.localhost:host-gateway"
+    image: headless-blog:prod
+    depends_on:
+      - wordpress
+    ports:
+      - "3002:3000"
+    extra_hosts:
+      - "wp.localhost:host-gateway"
+
 volumes:
   db_data:
   wp_core:
   frontend_node_modules:
   frontend_next:
+
+secrets:
+  nextenv:
+    file: ./.env.docker
