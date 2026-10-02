@@ -14,6 +14,10 @@ wp rewrite structure '/%postname%/'      # pretty permalinks, so /wp-json/ works
 wp plugin is-installed jwt-authentication-for-wp-rest-api \
   || wp plugin install jwt-authentication-for-wp-rest-api
 
+# Latest demo-content plugin straight from GitHub
+wp plugin install https://github.com/anamwp/wp-cli-post-importer/archive/refs/heads/master.zip --force \
+  || wp plugin is-installed wp-cli-post-importer
+
 # 4. Make Apache pass the Authorization header to PHP (JWT token validation needs it)
 if ! grep -q HTTP_AUTHORIZATION /var/www/html/.htaccess 2>/dev/null; then
   { printf 'SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1\n'; cat /var/www/html/.htaccess 2>/dev/null; } > /tmp/htaccess
@@ -28,6 +32,8 @@ if [ "$(wp post list --post_type=post --post_status=publish --format=count)" -lt
   wp start "${DEMO_IMPORT:-import-posts}"
 fi
 
-
+# Same as Settings → Permalinks → Save Changes: rebuild rewrite rules and .htaccess
+printf 'apache_modules:\n  - mod_rewrite\n' > /tmp/wp-cli.yml
+WP_CLI_CONFIG_PATH=/tmp/wp-cli.yml wp rewrite flush --hard
 
 echo "WordPress ready at $WP_URL"
