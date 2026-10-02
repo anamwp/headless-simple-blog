@@ -42,3 +42,10 @@ next-env.d.ts
 /blog/
 /design_handoff_headless_blog/
 todo.md
+
+# Docker
+docker/wordpress/plugins/jwt-authentication-for-wp-rest-api/
+docker/wordpress/plugins/akismet/
+docker/wordpress/plugins/hello.php
+docker/wordpress/plugins/index.php
+docker/wordpress/plugins/wp-cli-post-importer/

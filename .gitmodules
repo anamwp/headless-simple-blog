@@ -1,0 +1,3 @@
+[submodule "docker/wordpress/plugins/wp-cli-post-importer"]
+	path = docker/wordpress/plugins/wp-cli-post-importer
+	url = https://github.com/anamwp/wp-cli-post-importer.git

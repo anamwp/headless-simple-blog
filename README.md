@@ -67,6 +67,16 @@ npm run build
 npm start
 ```
 
+### Docker
+
+The Docker setup runs WordPress, MySQL, and the Next.js frontend. The `wp-cli-post-importer` plugin is included as a git submodule, so clone with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/anamwp/headless-simple-blog.git
+# or, after a normal clone:
+git submodule update --init
+```
+
 ## Technologies
 
 - **Framework**: [Next.js 16](https://nextjs.org)
