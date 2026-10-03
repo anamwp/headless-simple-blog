@@ -9,7 +9,7 @@ RUN npm ci
 # 2) Build the app
 FROM node:22-alpine AS build
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 BUILD_STANDALONE=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN --mount=type=secret,id=nextenv,target=/app/.env.production.local \

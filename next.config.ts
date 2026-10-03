@@ -3,7 +3,7 @@
 const hostname = process.env.SITE_DOMAIN || 'anamstarter.local';
 
 module.exports = {
-  output: 'standalone',
+  output: process.env.BUILD_STANDALONE === 'true' ? 'standalone' : undefined,
   // Without this, the Pages Router leaves node_modules dependencies (e.g.
   // sanitize-html -> htmlparser2, which ships an ESM-only build) as runtime
   // externals in Vercel's serverless functions, where Node's require() can't
