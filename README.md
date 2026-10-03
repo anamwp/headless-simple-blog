@@ -57,13 +57,14 @@ headless-simple-blog/
 │   ├── globals.css
 │   └── modernist.css
 ├── .dockerignore              # Keeps env files and build output out of the image
-├── .env                       # JWT secret for Docker Compose (git-ignored, you create it)
-├── .env.docker                # Frontend env for Docker (git-ignored, you create it)
+├── .env                       # Setup B: JWT secret for Docker Compose (git-ignored, you create it)
+├── .env.docker                # Setup B: frontend env for Docker (git-ignored, you create it)
+├── .env.local                 # Setup A: frontend env without Docker (git-ignored, you create it)
 ├── .gitignore
-├── compose.yaml               # Local stack: MySQL, WordPress, WP-CLI, frontend
-├── Dockerfile                 # Production image for the frontend
+├── compose.yaml               # Setup B: MySQL, WordPress, WP-CLI, frontend
+├── Dockerfile                 # Setup B: production image for the frontend
 ├── eslint.config.mjs
-├── next.config.ts             # Next.js config (standalone output, image hosts)
+├── next.config.ts             # Next.js config (image hosts, standalone output for Docker)
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.mjs
@@ -74,42 +75,142 @@ headless-simple-blog/
 
 ## Getting Started
 
-### Prerequisites
+There are two separate ways to run this project on your machine. Pick one, and run only one at a time.
 
-- Node.js 18+ 
-- npm or yarn
+| | Setup A: Local (without Docker) | Setup B: Docker |
+| --- | --- | --- |
+| WordPress | Your own site, for example Local by Flywheel | A container at http://wp.localhost:8090 |
+| Frontend | `npm` on your machine | Containers |
+| Frontend URL | http://localhost:3000 | http://localhost:3000 (dev) and http://localhost:3002 (production image) |
+| Env files | `.env.local` | `.env` and `.env.docker` |
+| You install | Node.js and a WordPress site | Docker Desktop only |
+| Demo content | Whatever is in your WordPress | Imported automatically |
+| Good for | Daily work against your own WordPress | A complete, repeatable stack and testing the production image |
 
-### Installation
+### Run one setup at a time
 
-1. Clone the repository
-2. Install dependencies:
+Both setups serve the frontend on port 3000, and each one talks to a different WordPress.
+
+- **Before Setup A**, stop Docker:
+
+  ```bash
+  docker compose --profile prod stop
+  ```
+
+- **Before Setup B**, stop the local server: press Ctrl+C in the terminal running `npm run dev` or `npm start`.
+- **After switching**, log out and log in again in the frontend. A login from one WordPress is not valid on the other.
+
+### Which command belongs to which setup
+
+| Command | Setup | Reads | Talks to |
+| --- | --- | --- | --- |
+| `npm run dev` | A | `.env.local` | Your own WordPress |
+| `npm run build`, `npm start` | A | `.env.local` | Your own WordPress |
+| `docker compose up -d` | B | `.env`, `.env.docker` | Docker WordPress |
+| `docker compose --profile prod up -d frontend-prod` | B | `.env`, `.env.docker` | Docker WordPress |
+
+### Environment files
+
+All three files are git-ignored. Create only the ones your setup needs.
+
+| File | Read by | Setup | Holds |
+| --- | --- | --- | --- |
+| `.env.local` | Next.js on your machine | A | Addresses of your own WordPress |
+| `.env` | Docker Compose | B | `JWT_AUTH_SECRET_KEY` for the WordPress container |
+| `.env.docker` | The frontend containers | B | Addresses of the Docker WordPress |
+
+- `npm` commands on your machine never read `.env.docker`.
+- Keep only `JWT_AUTH_SECRET_KEY` in `.env`. Next.js also reads `.env`, so frontend variables placed there would leak into Setup A.
+- Inside the Docker dev container, values from `.env.docker` always win over `.env.local`.
+
+The frontend variables are the same in `.env.local` and `.env.docker`; only the addresses differ.
+
+| Variable | What it is |
+| --- | --- |
+| `SITE_DOMAIN` | WordPress hostname without `http://`. Images are allowed from this host. |
+| `NEXT_PUBLIC_API_SITE_URL` | WordPress base URL |
+| `NEXT_PUBLIC_API_URL` | REST API base, ending in `/wp-json/wp/v2` |
+| `NEXT_PUBLIC_API_URL_JWT` | REST API root, ending in `/wp-json` |
+| `NEXT_PUBLIC_API_FOR_JWT_TOKEN` | JWT login endpoint, ending in `/wp-json/jwt-auth/v1/token` |
+| `NEXT_PUBLIC_POSTS_PER_PAGE` | Posts per page |
+| `ALLOW_LOCAL_IMAGE_IP` | `true` lets production mode optimize images from a WordPress on a private address. Local use only. |
+
+## Setup A: Local development (without Docker)
+
+### What you need
+
+- Node.js 20.9 or newer, with npm
+- A WordPress site your machine can reach (Local by Flywheel, MAMP, a staging site) with:
+  - permalinks set to "Post name" (Settings → Permalinks)
+  - [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/) installed and active
+  - these two lines in `wp-config.php`:
+
+    ```php
+    define( 'JWT_AUTH_SECRET_KEY', 'a-long-random-string' );
+    define( 'JWT_AUTH_CORS_ENABLE', true );
+    ```
+
+  - a few published posts with featured images. [wp-cli-post-importer](https://github.com/anamwp/wp-cli-post-importer) can create them with `wp start import-posts`.
+
+On Apache, the `Authorization` header also has to reach PHP. The JWT plugin's installation notes show the `.htaccess` line for that.
+
+### 1. Install
 
 ```bash
+git clone https://github.com/anamwp/headless-simple-blog.git
+cd headless-simple-blog
 npm install
 ```
 
-### Development
+### 2. Create `.env.local`
 
-Run the development server:
+Replace `your-site.local` with the address of your WordPress, and `http` with `https` if your site uses it.
 
 ```bash
+SITE_DOMAIN=your-site.local
+NEXT_PUBLIC_API_SITE_URL=http://your-site.local
+NEXT_PUBLIC_API_URL=http://your-site.local/wp-json/wp/v2
+NEXT_PUBLIC_API_URL_JWT=http://your-site.local/wp-json
+NEXT_PUBLIC_API_FOR_JWT_TOKEN=http://your-site.local/wp-json/jwt-auth/v1/token
+NEXT_PUBLIC_POSTS_PER_PAGE=9
+```
+
+`.env` and `.env.docker` are not used in this setup.
+
+### 3. Run
+
+Start your WordPress site, then:
+
+```bash
+docker compose --profile prod stop   # only if the Docker setup is running
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your blog.
+Open http://localhost:3000.
 
-### Build & Production
-
-Build for production:
+### Production mode on your machine (optional)
 
 ```bash
 npm run build
 npm start
 ```
 
-## Docker
+WordPress must be running during the build, because pages are generated from the REST API.
 
-Run the whole stack locally with one tool: MySQL, WordPress (with demo posts), and the Next.js frontend. No local PHP, MySQL, or Node install is needed.
+Production mode optimizes images on the server. That adds two requirements when WordPress runs on your own machine:
+
+- Add `ALLOW_LOCAL_IMAGE_IP=true` to `.env.local` and build again. Without it, Next.js refuses image hosts on a private address.
+- If WordPress uses a self-signed HTTPS certificate (Local by Flywheel does), tell Node to trust it when you start the server. Local by Flywheel usually keeps the certificate here:
+
+  ```bash
+  NODE_EXTRA_CA_CERTS="$HOME/Library/Application Support/Local/run/router/nginx/certs/your-site.local.crt" npm start
+  ```
+
+Neither is needed for `npm run dev`, because dev mode does not optimize images.
+
+## Setup B: Docker
+
+Run the whole stack with one tool: MySQL, WordPress (with demo posts), and the Next.js frontend. No local PHP, MySQL, or Node install is needed.
 
 | Service | Image | URL | Purpose |
 | --- | --- | --- | --- |
@@ -119,17 +220,19 @@ Run the whole stack locally with one tool: MySQL, WordPress (with demo posts), a
 | `frontend` | `node:22-alpine` | http://localhost:3000 | `next dev` with hot reload |
 | `frontend-prod` | built from `Dockerfile` | http://localhost:3002 | Production image (profile `prod`) |
 
-### Prerequisites
+### What you need
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) with Compose v2
 - Git
 
 Developed and tested with Docker Desktop on macOS (Apple Silicon).
 
+Stop any `npm run dev` or `npm start` running on your machine first. It holds port 3000, which the Docker frontend needs.
+
 ### 1. Clone
 
 ```bash
-git clone -b docker https://github.com/anamwp/headless-simple-blog.git
+git clone https://github.com/anamwp/headless-simple-blog.git
 cd headless-simple-blog
 ```
 
@@ -157,6 +260,8 @@ ALLOW_LOCAL_IMAGE_IP=true
 EOF
 ```
 
+`.env.local` is not needed for this setup.
+
 ### 3. Start WordPress and load demo content
 
 ```bash
@@ -169,8 +274,8 @@ docker compose run --rm wpcli sh /setup.sh
 - installs WordPress at `http://wp.localhost:8090` (login `admin` / `admin`)
 - enables pretty permalinks so `/wp-json/` works
 - installs and activates [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/)
-- makes Apache pass the `Authorization` header to PHP
 - downloads the latest [wp-cli-post-importer](https://github.com/anamwp/wp-cli-post-importer) from GitHub (re-run `setup.sh` any time to update it)
+- makes Apache pass the `Authorization` header to PHP
 - imports demo posts with featured images (skipped when 5 or more posts exist)
 - flushes permalinks, the same as saving Settings → Permalinks in wp-admin
 
@@ -209,9 +314,22 @@ docker compose run --rm wpcli wp start delete-all-posts   # remove everything im
 
 Any other WP-CLI command works the same way, for example `docker compose run --rm wpcli wp plugin list`.
 
+### Guest comments (optional)
+
+WordPress only accepts REST comments from logged-in users by default. To let guests comment, create `docker/wordpress/mu-plugins/allow-guest-comments.php`:
+
+```php
+<?php
+add_filter( 'rest_allow_anonymous_comments', '__return_true' );
+```
+
+The folder is mounted into WordPress, so the file is active right away.
+
 ### Production image
 
-`Dockerfile` is a three-stage build (`deps` → `build` → `runtime`) that uses Next.js `output: 'standalone'` and runs as the non-root `node` user. WordPress must be running during the build because static pages are generated from the REST API.
+`Dockerfile` is a three-stage build (`deps` → `build` → `runtime`) that runs as the non-root `node` user. It sets `BUILD_STANDALONE=true`, which switches `next.config.ts` to Next.js standalone output. Outside Docker that variable is unset, so `npm run build` and hosted builds are unaffected.
+
+WordPress must be running during the build, because static pages are generated from the REST API.
 
 ```bash
 docker compose up -d db wordpress
@@ -219,7 +337,7 @@ docker compose --profile prod build frontend-prod
 docker compose --profile prod up -d frontend-prod
 ```
 
-Open http://localhost:3002. It can run next to the dev server on port 3000.
+Open http://localhost:3002. It can run next to the dev container on port 3000.
 
 `frontend-prod` is in the `prod` profile, so plain `docker compose stop` and `docker compose down` skip it. Include the profile to stop everything:
 
@@ -238,7 +356,7 @@ Things to know:
   docker compose --profile prod up -d frontend-prod
   ```
 
-- `ALLOW_LOCAL_IMAGE_IP=true` lets the Next.js image optimizer fetch images from WordPress on a private address. It is only for this local setup. Leave it unset on real deployments.
+- `ALLOW_LOCAL_IMAGE_IP=true` lets the Next.js image optimizer fetch images from WordPress on a private address. It is only for local use. Leave it unset on real deployments.
 
 ### How the networking works
 
@@ -257,12 +375,14 @@ echo "127.0.0.1 wp.localhost" | sudo tee -a /etc/hosts
 
 | Symptom | Fix |
 | --- | --- |
-| `Error: 'start' is not a registered wp command` | The importer plugin did not download. Check your internet connection and run `setup.sh` again. |
-| `jwt_auth_bad_config` on login | `JWT_AUTH_SECRET_KEY` is missing from `.env`. Add it, then `docker compose up -d --force-recreate wordpress`. |
-| Dashboard returns 403 | The browser holds a login token from another WordPress or an old secret. Log out (or delete the `user_data` cookie) and log in again. |
+| `port is already allocated` / `address already in use` | Another process uses 3000, 3002 or 8090, most often a local `npm run dev` from Setup A. Stop it, or change the left side of the port mapping in `compose.yaml`. |
+| Dashboard returns 403 | The browser holds a login from the other setup or an old secret. Log out (or delete the `user_data` cookie) and log in again. |
+| `npm run build` fails while building `frontend-prod` | WordPress was not running during the build. Run `docker compose up -d db wordpress` first, then build again. |
 | Images missing on port 3002 only | Check `ALLOW_LOCAL_IMAGE_IP=true` is in `.env.docker`, then rebuild with `--no-cache`. |
-| `port is already allocated` / `address already in use` | Another process uses 3000, 3002 or 8090. Stop it, or change the left side of the port mapping in `compose.yaml`. |
+| `jwt_auth_bad_config` on login | `JWT_AUTH_SECRET_KEY` is missing from `.env`. Add it, then `docker compose up -d --force-recreate wordpress`. |
+| `Error: 'start' is not a registered wp command` | The importer plugin did not download. Check your internet connection and run `setup.sh` again. |
 | Frontend shows no posts | Check WordPress answers: `curl http://wp.localhost:8090/wp-json/wp/v2/posts?per_page=1`. |
+| `frontend-prod` still running after `docker compose stop` | Add the profile: `docker compose --profile prod stop`. |
 
 ## Technologies
 
@@ -286,6 +406,7 @@ Deploy on [Vercel](https://vercel.com) for the best experience with Next.js:
 
 1. Push your code to a Git repository
 2. Connect your repository to Vercel
-3. Deploy with a single click
+3. Add the frontend variables from the [Environment files](#environment-files) table in the Vercel project settings, pointing at a WordPress that is reachable from the internet. Do not set `ALLOW_LOCAL_IMAGE_IP` or `BUILD_STANDALONE` there.
+4. Deploy
 
 For other hosting options, check the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).
